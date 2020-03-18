@@ -3,7 +3,7 @@
     <!-- 导航 显示返回箭头-->
     <!-- click-left点击左侧事件 -->
     <!-- $router.go(-1) $router.back() -->
-    <van-nav-bar title='搜索中心' left-arrow @click-left="$router.back()"></van-nav-bar>
+    <van-nav-bar title='搜索结果' left-arrow @click-left="$router.back()"></van-nav-bar>
   </div>
 </template>
 
