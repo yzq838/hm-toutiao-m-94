@@ -6,6 +6,7 @@
 import axios from 'axios'
 import JSONBig from 'json-bigint'// 引入大数字插件
 import store from '@/store'// 引入vuex实例对象
+import router from '@router' // 引入router
 // axios defaults 对原有默认值进行修改
 // axios.create()相当于new一个新的实例
 const instance = axios.create({
@@ -34,7 +35,40 @@ instance.interceptors.response.use(function (response) {
   } catch (error) {
     return response.data
   }
-}, function (error) {
+}, async function (error) {
+  if (error.response && error.response.state === 401) {
+    const path = {
+      path: '/login',
+      query: {
+        redirectUrl: router.currentRoute.fullPath// 登录页需要跳转地址
+      }
+    }
+    if (store.state.user.refresh_token) {
+      try {
+        const result = await axios({
+          method: 'put',
+          url: 'http://ttapi.research.itcast.cn/app/v1_0/authorizations',
+          headers: { Authorization: `Bearer ${store.state.user.refresh_token}` } // 在请求头中注入refresh_token
+        })
+
+        store.commit('updateUser', {
+          user: {
+            token: result.data.data.token, // 新token// 新token
+            refresh_token: store.state.user.refresh_token// 原来的token
+          }
+        })
+        return instance(error.config)
+      } catch (error) {
+        store.commit('delUser')
+        router.push(path)
+      }
+    } else {
+      // refresh_token没有的话直接跳到登陆
+    //   router.push('/login')
+      store.commit('delUser')
+      router.push(path)
+    }
+  }
   return Promise.reject(error)
 })
 
