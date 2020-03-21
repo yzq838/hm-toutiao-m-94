@@ -89,8 +89,8 @@ export default {
           const { redirectUrl } = this.$route.query// query查询参数2
           this.$router.push(redirectUrl || '/')//
         } catch (error) {
-          this.$notify({ message: '手机号或者验证码错误', durstion: 800 })
-          // this.$gnotify({ message: '用户名或者验证码错误' })
+          // this.$notify({ message: '手机号或者验证码错误', durstion: 800 })
+          this.$gnotify({ message: '用户名或者验证码错误' })
         }
       }
     }
