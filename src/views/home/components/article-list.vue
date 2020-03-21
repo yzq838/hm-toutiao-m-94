@@ -8,7 +8,7 @@
     <!-- 上拉加载 -->
     <!-- 添加内容 -->
     <van-cell-group>
-<van-cell  v-for="item in articles" :key="item">
+<van-cell  v-for="item in articles" :key="item.art_id">
     <!-- 文章列表的循环项 -->
     <div class="article_item">
   <h3 class="van-ellipsis">PullRefresh下拉刷新PullRefresh下拉刷新下拉刷新下拉刷新</h3>
@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import { getArticles } from '@/api/articles'
 export default {
   data () {
     return {
@@ -58,14 +59,22 @@ export default {
   },
   methods: {
 
-    onLoad () {
-    //   setTimeout(() => { this.finished = true }, 1000)// 等待一秒关闭加载状态
-      if (this.articles.length > 30) {
-        this.finished = true// 关闭加载
+    async onLoad () {
+      //   setTimeout(() => { this.finished = true }, 1000)// 等待一秒关闭加载状态
+      //   if (this.articles.length > 30) {
+      //     this.finished = true// 关闭加载
+      //   } else {
+      //     const arr = Array.from(Array(10), (value, index) => index + 1)
+      //     this.articles.push(...arr)
+      //     this.uploading = false
+      //   }
+      const data = await getArticles({ channel_id: this.channel_id, timestamp: this.timestamp || Date.now() })
+      this.articles.push(data.results)
+      this.uploading = false
+      if (data.pre_timestamp) {
+        this.timestamp = data.pre_timestamp
       } else {
-        const arr = Array.from(Array(10), (value, index) => index + 1)
-        this.articles.push(...arr)
-        this.uploading = false
+        this.finished = true
       }
     }, // 下拉刷新
     onRefresh () {
