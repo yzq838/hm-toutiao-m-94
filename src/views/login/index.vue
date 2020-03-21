@@ -30,6 +30,9 @@
 </template>
 
 <script>
+import { login } from '@/api/user'
+import { mapMutations } from 'vuex'// 辅助函数
+// import resultVue from '../search/result.vue'
 export default {
   data () {
     return {
@@ -46,6 +49,7 @@ export default {
     }
   },
   methods: {
+    ...mapMutations(['updateUser']),
     checkMobile () {
       if (!this.loginForm.mobile) {
         this.errorMessage.mobile = '手机号不能为空'
@@ -73,9 +77,21 @@ export default {
       return true
     },
     // 登录校验
-    login () {
-      if (this.checkMobile() && this.checkCode()) {
-        // 通过校验调用接口 对比用户名和密码是否正确
+    async login () {
+      const validateMobile = this.checkMobile()
+      const validateCode = this.checkCode()
+      if (validateMobile && validateCode) {
+        try {
+          // 通过校验调用接口 对比用户名和密码是否正确
+          const result = await login(this.loginForm)
+          // 拿到token之后把它设置给vuex中得state
+          this.updateUser({ user: result })
+          const { redirectUrl } = this.$route.query// query查询参数2
+          this.$router.push(redirectUrl || '/')//
+        } catch (error) {
+          this.$notify({ message: '手机号或者验证码错误', durstion: 800 })
+          // this.$gnotify({ message: '用户名或者验证码错误' })
+        }
       }
     }
   }
