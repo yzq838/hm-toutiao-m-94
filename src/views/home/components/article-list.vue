@@ -8,22 +8,22 @@
     <!-- 上拉加载 -->
     <!-- 添加内容 -->
     <van-cell-group>
-<van-cell  v-for="item in articles" :key="item.art_id">
+<van-cell  v-for="item in articles" :key="item.art_id.toString()">
     <!-- 文章列表的循环项 -->
     <div class="article_item">
-  <h3 class="van-ellipsis">PullRefresh下拉刷新PullRefresh下拉刷新下拉刷新下拉刷新</h3>
-  <div class="img_box">
-     <van-image class="w33" fit="cover" src="https://img.yzcdn.cn/vant/cat.jpeg"/>
-     <van-image class="w33" fit="cover" src="https://img.yzcdn.cn/vant/cat.jpeg"/>
-     <van-image class="w33" fit="cover" src="https://img.yzcdn.cn/vant/cat.jpeg"/>
+  <h3 class="van-ellipsis">{{ item.title }}</h3>
+  <div class="img_box" v-if="item.cover.type === 3">
+     <van-image class="w33" fit="cover" :src="item.cover.images[0]"/>
+     <van-image class="w33" fit="cover" :src="item.cover.images[1]"/>
+     <van-image class="w33" fit="cover" :src="item.cover.images[2]"/>
   </div>
-  <!-- <div class="img_box">
-      <van-image class="w100" fit="cover" src="https://img.yzcdn.cn/vant/cat.jpeg"/>
-  </div> -->
+  <div class="img_box"  v-if="item.cover.type === 1">
+      <van-image class="w100" fit="cover" :src="item.cover.images[0]"/>
+  </div>
   <div class="info_box">
-     <span>你像一阵风</span>
-     <span>8评论</span>
-     <span>10分钟前</span>
+     <span>{{ item.aut_name}}</span>
+     <span>{{ item.comm_count }}</span>
+     <span>{{ item.pubdate }}</span>
      <span class="close"><van-icon name="cross"></van-icon></span>
   </div>
 </div>
@@ -69,7 +69,7 @@ export default {
       //     this.uploading = false
       //   }
       const data = await getArticles({ channel_id: this.channel_id, timestamp: this.timestamp || Date.now() })
-      this.articles.push(data.results)
+      this.articles.push(...data.results)
       this.uploading = false
       if (data.pre_timestamp) {
         this.timestamp = data.pre_timestamp
