@@ -68,6 +68,7 @@ export default {
       //     this.articles.push(...arr)
       //     this.uploading = false
       //   }
+      await this.$sleep()
       const data = await getArticles({ channel_id: this.channel_id, timestamp: this.timestamp || Date.now() })
       this.articles.push(...data.results)
       this.uploading = false
@@ -78,6 +79,7 @@ export default {
       }
     }, // 下拉刷新
     async onRefresh () {
+      await this.$sleep()
       const data = await getArticles({
         channel_id: this.channel_id,
         timestamp: Date.now()
