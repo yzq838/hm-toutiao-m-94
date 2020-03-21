@@ -45,7 +45,15 @@ export default {
       downLoadin: false,
       uploading: false, // 表示是否开启了上拉加载 默认值false
       finished: false, // 是否已经完成说有数据加载
-      articles: []// 文章列表
+      articles: [], // 文章列表
+      timestamp: null// 时间戳存储历史时间按戳
+    }
+  },
+  props: {
+    channel_id: {
+      required: true, // true含义必须传
+      type: Number, // 传入类型
+      default: null// 默认值，没有就使用
     }
   },
   methods: {
