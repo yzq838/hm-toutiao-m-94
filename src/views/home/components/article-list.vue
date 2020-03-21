@@ -77,13 +77,28 @@ export default {
         this.finished = true
       }
     }, // 下拉刷新
-    onRefresh () {
-      setTimeout(() => {
-        const arr = Array.from(Array(3), (value, index) => '追加' + (index + 1))
-        this.articles.unshift(...arr)
-        this.downLoadin = false
-        this.successText = `更新了${arr.length}条数据`
-      }, 1000)
+    async onRefresh () {
+      const data = await getArticles({
+        channel_id: this.channel_id,
+        timestamp: Date.now()
+      })
+      this.downLoadin = false
+      if (data.results.length) {
+        this.articles = data.results
+        if (data.pre_timestamp) {
+          this.finished = false
+          this.timestamp = data.pre_timestamp
+        }
+        this.successText = `当前更新了${data.results.length}条数据`
+      } else {
+        this.successText = '当前已经是最新数据了'
+      }
+    //   setTimeout(() => {
+    //     const arr = Array.from(Array(3), (value, index) => '追加' + (index + 1))
+    //     this.articles.unshift(...arr)
+    //     this.downLoadin = false
+    //     this.successText = `更新了${arr.length}条数据`
+    //   }, 1000)
     }
 
   }
