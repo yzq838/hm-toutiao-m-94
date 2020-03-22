@@ -38,7 +38,8 @@ export default {
   data () {
     return {
       channels: [], // 接收频道数据
-      showMoreAction: false// 是否显示弹层
+      showMoreAction: false, // 是否显示弹层
+      articleId: null
     }
   },
   methods: {
@@ -46,12 +47,11 @@ export default {
       const data = await getMyChannels()// 接受返回的数据结果
       this.channels = data.channels
     },
-    openAction () {
+    openAction (artId) {
       this.showMoreAction = true
+      // 存id
+      this.articleId = artId
     }
-  },
-  openAction () {
-    this.showMoreAction = true
   },
   created () {
     this.getMyChannels()
