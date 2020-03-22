@@ -27,7 +27,7 @@
 
      <!-- <span class="close" v-if="$store.state.user.token">最原始的方式 -->
      <!-- 辅助函数的形式 -->
-     <span @click="$emit('showAction')" class="close" v-if="user.token">
+     <span @click="$emit('showAction',item.art_id.toString())" class="close" v-if="user.token">
        <van-icon name="cross">
          </van-icon></span>
   </div>
@@ -45,10 +45,25 @@
 <script>
 import { getArticles } from '@/api/articles'
 import { mapState } from 'vuex'
+import eventbus from '@/utils/eventbus'
 export default {
+  created () {
+    eventbus.$on('delArticle', (artId, channelId) => {
+      if (channelId === this.channel_id) {
+        const index = this.articles.findIndex(item => item.art_id.toString() === artId)
+        if (index > -1) {
+          this.articles.splice(index, 1)
+        }
+        if (this.articles.length === 0) {
+          this.onLoad()
+        }
+      }
+    })
+  }, // 初始化函数
   computed: {
     ...mapState(['user'])// 将user 对象映射到计算属性中
   },
+
   data () {
     return {
       successText: '', // 刷新成功文本

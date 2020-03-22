@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <van-tabs>
+    <van-tabs v-model=" activeIndex">
       <!-- 放置子标签 -->
       <van-tab :title="item.name" v-for="item in channels" :key="item.id">
         <!-- 生成多个单元格 -->
@@ -21,7 +21,7 @@
     <!-- 放置一个弹出层 -->
 
     <van-popup v-model="showMoreAction" style="width: 80%">
-     <MoreAction/>
+     <MoreAction @dislike="dislikeArticle" />
     </van-popup>
   </div>
 </template>
@@ -31,7 +31,8 @@
 import ArticleList from './components/article-list'
 import { getMyChannels } from '@/api/channels'
 import MoreAction from './components/more-action'
-
+import { dislikeArticle } from '@/api/articles'
+import eventbus from '@/utils/eventbus'// 公共事件处理器
 export default {
   name: 'Home',
   components: { ArticleList, MoreAction },
@@ -39,7 +40,8 @@ export default {
     return {
       channels: [], // 接收频道数据
       showMoreAction: false, // 是否显示弹层
-      articleId: null
+      articleId: null,
+      activeIndex: 0// 当前默认激活的页签
     }
   },
   methods: {
@@ -51,6 +53,25 @@ export default {
       this.showMoreAction = true
       // 存id
       this.articleId = artId
+    },
+    async dislikeArticle () {
+      try {
+        await dislikeArticle({
+          target: this.articleId//
+        })
+        this.$gnotify({
+          type: 'success',
+          message: '操作成功'
+        })
+
+        eventbus.$emit('delArticle', this.articleId, this.channels[this.activeIndex].id)
+        this.showMoreAction = false
+      } catch (error) {
+        // 默认是红色
+        this.$gnotify({
+          message: '操作失败'
+        })
+      }
     }
   },
   created () {

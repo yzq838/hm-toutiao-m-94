@@ -6,7 +6,7 @@ dayjs.extend(relativeTime)// 相当于dayjs扩展相对时间的方法
 export default {
   // 导出一个默认对象
   install (Vue) {
-    Vue.prototype.$gnotify = (params) => Vue.prototype.$notif({ duration: 800, ...params })
+    Vue.prototype.$gnotify = (params) => Vue.prototype.$notify({ duration: 800, ...params })
     Vue.prototype.$sleep = sleep
     // 过滤器
     Vue.filter('relTime', relTime)// 注册全局过滤器
