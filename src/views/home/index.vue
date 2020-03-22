@@ -9,7 +9,7 @@
           <van-cell v-for="item in 20" :key="item" title="标题" value="内容"></van-cell>
 
         </van-cell-group> -->
-        <ArticleList :channel_id = "item.id"></ArticleList   >
+        <ArticleList  @showAction="openAction" :channel_id = "item.id"></ArticleList   >
         </div>
       </van-tab>
 
@@ -18,6 +18,11 @@
       <!-- 放置图标 -->
 <van-icon name="wap-nav"></van-icon>
     </span>
+    <!-- 放置一个弹出层 -->
+
+    <van-popup v-model="showMoreAction" style="width: 80%">
+     <MoreAction/>
+    </van-popup>
   </div>
 </template>
 
@@ -25,20 +30,28 @@
 // @ is an alias to /src
 import ArticleList from './components/article-list'
 import { getMyChannels } from '@/api/channels'
+import MoreAction from './components/more-action'
 
 export default {
   name: 'Home',
-  components: { ArticleList },
+  components: { ArticleList, MoreAction },
   data () {
     return {
-      channels: []// 接收频道数据
+      channels: [], // 接收频道数据
+      showMoreAction: false// 是否显示弹层
     }
   },
   methods: {
     async getMyChannels () {
       const data = await getMyChannels()// 接受返回的数据结果
       this.channels = data.channels
+    },
+    openAction () {
+      this.showMoreAction = true
     }
+  },
+  openAction () {
+    this.showMoreAction = true
   },
   created () {
     this.getMyChannels()
