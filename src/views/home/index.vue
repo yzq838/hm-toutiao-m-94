@@ -9,7 +9,7 @@
           <van-cell v-for="item in 20" :key="item" title="标题" value="内容"></van-cell>
 
         </van-cell-group> -->
-        <ArticleList :channel_id="item.id"></ArticleList   >
+        <ArticleList :channel_id = "item.id"></ArticleList   >
         </div>
       </van-tab>
 
