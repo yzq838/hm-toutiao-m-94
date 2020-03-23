@@ -8,9 +8,9 @@
         <van-button v-else @click="editing=false" size="mini" type="danger" plain>完成</van-button>
       </div>
       <van-grid class="van-hairline--left">
-        <van-grid-item v-for="index in 8" :key="index">
-          <span class="f12">频道{{index}}</span>
-          <van-icon class="btn" name="cross"></van-icon>
+        <van-grid-item v-for="(item, index) in channels" :key="item.id">
+          <span  class="f12">{{ item.name }}</span>
+          <van-icon v-if="index !== 0 && editing" class="btn" name="cross"></van-icon>
         </van-grid-item>
       </van-grid>
     </div>
@@ -34,6 +34,13 @@ export default {
   data () {
     return {
       editing: false
+    }
+  },
+  props: {
+    channels: {
+      required: true, // 必传channels
+      type: Array, // 数组类型
+      default: () => []// 默认值空数组 此函数返回一个空数组
     }
   }
 }
