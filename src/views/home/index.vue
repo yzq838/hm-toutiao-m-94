@@ -21,7 +21,7 @@
     <!-- 放置一个弹出层 -->
 
     <van-popup v-model="showMoreAction" style="width: 80%">
-     <MoreAction @dislike="dislikeArticle" />
+     <MoreAction @dislike="dislikeOrReport('dislike')" @report="dislikeOrReport('report',$event)"/>
     </van-popup>
   </div>
 </template>
@@ -31,7 +31,7 @@
 import ArticleList from './components/article-list'
 import { getMyChannels } from '@/api/channels'
 import MoreAction from './components/more-action'
-import { dislikeArticle } from '@/api/articles'
+import { dislikeArticle, reportArticle } from '@/api/articles'
 import eventbus from '@/utils/eventbus'// 公共事件处理器
 export default {
   name: 'Home',
@@ -53,12 +53,12 @@ export default {
       this.showMoreAction = true
       // 存id
       this.articleId = artId
-    },
-    async dislikeArticle () {
+    }, // operateType操作类型
+    async dislikeOrReport (operateType, type) {
       try {
-        await dislikeArticle({
+        operateType === 'dislike' ? await dislikeArticle({
           target: this.articleId//
-        })
+        }) : await reportArticle({ target: this.articleId, type })
         this.$gnotify({
           type: 'success',
           message: '操作成功'
@@ -73,6 +73,23 @@ export default {
         })
       }
     }
+    // 举报文章
+    // async reportArticle (type) {
+    //   // 调用举报接口
+    //   try {
+    //     await reportArticle({ target: this.articleId, type })
+    //     this.$gnotify({
+    //       type: 'success',
+    //       message: '操作成功'
+    //     })
+    //     eventbus.$emit('delArticle', this.articleId, this.channels[this.activeIndex].id)
+    //     this.showMoreAction = false
+    //   } catch (error) {
+    //     this.$gnotify({
+    //       message: '操作失败'
+    //     })
+    //   }
+    // }
   },
   created () {
     this.getMyChannels()
