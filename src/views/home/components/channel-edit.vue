@@ -12,7 +12,7 @@
          <!-- 点击频道的时候需把当前的频道id传出去或传索引 -->
           <!-- <span @click="$emit('selectChannel', item.id)" class="f12">{{ item.name }}</span> -->
           <span @click="$emit('selectChannel', index)" :class="{red: index == activeIndex}" class="f12">{{ item.name }}</span>
-          <van-icon v-if="index !== 0 && editing" class="btn" name="cross"></van-icon>
+          <van-icon @click="$emit('delChannel', item.id)" v-if="index !== 0 && editing" class="btn" name="cross"></van-icon>
         </van-grid-item>
       </van-grid>
     </div>
@@ -68,6 +68,8 @@ export default {
       return this.allChannels.filter(item => !this.channels.some(o => o.id === item.id))
     }
   },
+  // 不用计算属性? 可选频道 其实是一个动态的结果  全部数据(data) - 用户频道(props) => 重新计算频道数据 => 缓存
+
   created () {
     this.getAllChannels() // 调用组件方法
   }
