@@ -26,7 +26,7 @@
     <!-- 编辑频道 弹出面板 -->
     <van-action-sheet :round="false" v-model="showChannelEdit" title="编辑频道">
       <!-- 放置编辑组件 -->
-     <channel-edit :channels="channels"></channel-edit>
+     <ChannelEdit @selectChannel="selectChannel" :channels="channels"></ChannelEdit>
     </van-action-sheet>
   </div>
 </template>
@@ -55,6 +55,15 @@ export default {
     async getMyChannels () {
       const data = await getMyChannels()// 接受返回的数据结果
       this.channels = data.channels
+    }, // 当子组件触发selectChannel是触发改方法 传 id方法
+    // selectChannel (id) {
+    //   const index = this.channels.findIndex(item => item.id === id)
+    //   this.activeIndex = index
+    //   this.showChannelEdit = false
+    // },传index 方法
+    selectChannel (index) {
+      this.activeIndex = index
+      this.showChannelEdit = false
     },
     openAction (artId) {
       this.showMoreAction = true
