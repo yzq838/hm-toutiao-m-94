@@ -11,7 +11,7 @@
         <van-grid-item v-for="(item, index) in channels" :key="item.id">
          <!-- 点击频道的时候需把当前的频道id传出去或传索引 -->
           <!-- <span @click="$emit('selectChannel', item.id)" class="f12">{{ item.name }}</span> -->
-          <span @click="$emit('selectChannel', index)" class="f12">{{ item.name }}</span>
+          <span @click="$emit('selectChannel', index)" :class="{red: index == activeIndex}" class="f12">{{ item.name }}</span>
           <van-icon v-if="index !== 0 && editing" class="btn" name="cross"></van-icon>
         </van-grid-item>
       </van-grid>
@@ -47,12 +47,12 @@ export default {
       required: true, // 表示必须传递channels
       type: Array, // 数组类型
       default: () => [] // 默认值给一格空数组 表示 此函数默认返回一个空数组
+    },
+    activeIndex: {
+      required: true, // 表示必须传递channels
+      type: Number, // 指定type是number类型
+      default: 0
     }
-    // activeIndex: {
-    //   required: true, // 表示必须传递channels
-    //   type: Number, // 指定type是number类型
-    //   default: 0
-    // }
   },
   methods: {
     async  getAllChannels () {

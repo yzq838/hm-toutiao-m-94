@@ -26,7 +26,7 @@
     <!-- 编辑频道 弹出面板 -->
     <van-action-sheet :round="false" v-model="showChannelEdit" title="编辑频道">
       <!-- 放置编辑组件 -->
-     <ChannelEdit @selectChannel="selectChannel" :channels="channels"></ChannelEdit>
+     <ChannelEdit :activeIndex = "activeIndex" @selectChannel="selectChannel" :channels="channels"></ChannelEdit>
     </van-action-sheet>
   </div>
 </template>
