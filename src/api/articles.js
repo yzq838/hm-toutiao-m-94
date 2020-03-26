@@ -22,3 +22,11 @@ export function reportArticle (data) {
     data
   })
 }
+// 获取联想搜索接口
+export function getSuggestion (params) {
+  return request({
+    url: '/suggestion', // 搜索地址
+
+    params
+  })
+}

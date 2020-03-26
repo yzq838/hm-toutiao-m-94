@@ -3,21 +3,21 @@
     <!-- 搜索组件一级路由   返回上一个页面-->
     <van-nav-bar left-arrow title="搜索中心" @click-left="$router.back()"></van-nav-bar>
     <!-- 导航 -->
-    <van-search v-model.trim="q"  placeholder="请输入搜索关键词" shape="round" />
+    <van-search @search = "onSearch" v-model.trim="q"  placeholder="请输入搜索关键词" shape="round" />
     <van-cell-group class="suggest-box" v-if="q" >
       <van-cell icon="search">
         <span>j</span>ava
       </van-cell>
     </van-cell-group>
     <div class="history-box" v-if="!q">
-      <div class="head">
+      <div class="head" v-if="historyList.length">
         <span>历史记录</span>
-        <van-icon name="delete"></van-icon>
+        <van-icon name="delete" @click="clear"></van-icon>
       </div>
       <van-cell-group>
-        <van-cell>
-          <a class="word_btn">电脑</a>
-          <van-icon class="close_btn" slot="right-icon" name="cross" />
+        <van-cell @click="toSearchResult(item)" v-for="(item, index) in historyList" :key="index">
+          <a class="word_btn">{{ item }}</a>
+          <van-icon @click.stop="delHistory" class="close_btn" slot="right-icon" name="cross" />
         </van-cell>
       </van-cell-group>
     </div>
@@ -25,14 +25,54 @@
 </template>
 
 <script>
+import { getSuggestion } from '@/api/articles'// 引入搜索联想接口
+const key = 'hm-94-toutiao-history'// 用来作为历史记录在本地缓存中的key
 export default {
   name: 'search',
   data () {
     return {
-      q: ''
+      q: '', // 关键字
+      // historyList: [],// 作为数据变量接收历史记录
+      historyList: JSON.parse(localStorage.getItem(key) || '[]')
+    }
+  },
+  // created () {
+  //   // 钩子函数实例初始化之后
+  //   this.historyList = JSON.parse(localStorage.getItem(key) || '[]')
+  // }
+  methods: {
+    // 删除历史
+    delHistory (index) {
+      this.historyList.splice(index, 1)// 点击删除对应历史几录
+      localStorage.setItem(key, JSON.stringify(this.historyList))// 同步
+    },
+    toSearchResult (q) {
+    // toSearchResult (text) {
+      // this.$router// 当前路由对象信息
+      // this.$route// 当前路由页面对象信息 地址 参数
+      // this.$router.push('/search/result?q=' + text)// params query传参（地址拼接传参）
+      this.$router.push({ path: '/search/result', query: { q } })// query传参(对象形式)
+    },
+    async clear () {
+      try {
+        await this.$dialog.confirm({
+          title: '提示',
+          message: '您确定删除所有的历史记录吗？'
+        })
+        this.historyList = []
+        localStorage.setItem(key, '[]')
+      } catch (error) {
+
+      }
+    },
+    onSearch (q) {
+      if (!this.q) return
+      this.historyList.push(this.q) // 将搜索内容加入到历史记录// 把搜索内容加入到历史记录中
+      this.historyList = Array.from(new Set(this.historyList))// 去重
+      this.$router.push({ path: '/search/result', query: { q: this.q } })// query传参(对象形式)
+      localStorage.setItem(key, JSON.stringify(this.historyList))// 同步到本地缓存
     }
   }
-
 }
 </script>
 
