@@ -25,8 +25,14 @@ export function reportArticle (data) {
 // 获取联想搜索接口
 export function getSuggestion (params) {
   return request({
-    url: '/suggestion', // 搜索地址
-
-    params
+    url: '/suggestion', // 搜搜建议地址
+    params // query参数放置在 params中
+  })
+}
+// 搜索文章方法
+export function searchArticle (params) {
+  return request({
+    url: '/search', //
+    params // guanjia关键词及分页信息
   })
 }
