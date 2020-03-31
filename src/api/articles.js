@@ -36,3 +36,9 @@ export function searchArticle (params) {
     params // guanjia关键词及分页信息
   })
 }
+// 获取文章详情
+export function getArticleInfo (artId) {
+  return request({
+    url: `/articles/${artId}` // 获取文章详情地址
+  })
+}

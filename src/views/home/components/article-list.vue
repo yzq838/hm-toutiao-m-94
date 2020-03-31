@@ -8,7 +8,8 @@
     <!-- 上拉加载 -->
     <!-- 添加内容 -->
     <van-cell-group>
-<van-cell  v-for="item in articles" :key="item.art_id.toString()">
+      <!-- /可以跳转到对应地址 -->
+<van-cell :to="`/article?artId=${item.art_id.toString()}`" v-for="item in articles" :key="item.art_id.toString()">
     <!-- 文章列表的循环项 -->
     <div class="article_item">
   <h3 class="van-ellipsis">{{ item.title }}</h3>
@@ -26,8 +27,8 @@
      <span>{{ item.pubdate | relTime}}</span>
 
      <!-- <span class="close" v-if="$store.state.user.token">最原始的方式 -->
-     <!-- 辅助函数的形式 -->
-     <span @click="$emit('showAction',item.art_id.toString())" class="close" v-if="user.token">
+     <!-- 辅助函数的形式 叉号-->
+     <span  @click.stop="$emit('showAction',item.art_id.toString())" class="close" v-if="user.token">
        <van-icon name="cross">
          </van-icon></span>
   </div>
