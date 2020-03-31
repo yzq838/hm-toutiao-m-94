@@ -10,3 +10,19 @@ export function login (data) {
     data// 接收传入的data
   })
 }
+// 关注用户
+export function followUser (data) {
+  return request({
+    url: '/user/followings', // 关注用户请求地址
+    method: 'post',
+    data// 接收传入的data
+  })
+}
+// 取消关注用户
+export function unfollowUser (autid) {
+  return request({
+    url: `/user/followings/${autid}`, // 关注用户请求地址
+    method: 'delete'
+
+  })
+}
