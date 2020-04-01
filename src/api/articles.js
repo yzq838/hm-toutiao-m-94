@@ -43,7 +43,7 @@ export function getArticleInfo (artId) {
   })
 }
 // 获取评论或评论回复
-export function getComment (params) {
+export function getComments (params) {
   return request({
     url: '/comments', // 获取
     params// type(文章的回复或者回复的回复)source（来源id） offset（偏移量，分页数据）

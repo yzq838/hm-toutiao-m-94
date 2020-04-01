@@ -38,7 +38,7 @@
         >不喜欢</van-button>
       </div>
       <!-- 放置comment组件 到 detail内部 因为有padding-->
-   <Comment />
+   <Comments />
     </div>
 
     <!-- 放置遮罩层 -->
@@ -54,10 +54,10 @@
 <script>
 import { getArticleInfo } from '@/api/articles'
 import { followUser, unfollowUser } from '@/api/user'
-import Comment from './components/comment' // 引入评论组件
+import Comments from './components/comment' // 引入评论组件
 export default {
   components: {
-    Comment
+    Comments
   },
   data () {
     return {
