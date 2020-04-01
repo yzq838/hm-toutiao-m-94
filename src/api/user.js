@@ -26,3 +26,11 @@ export function unfollowUser (autid) {
 
   })
 }
+// 获取y用户自己个人信息
+
+export function getUserInfo () {
+  return request({
+    url: '/user' // 关注用户个人信息地址
+
+  })
+}
