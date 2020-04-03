@@ -48,7 +48,7 @@
 <script>
 // import * as getUserInfo from '@/api/user'
 import { getUserInfo } from '@/api/user'
-import { mapMutations } from 'vuex'
+import { mapMutations } from 'vuex'// 引入方法
 export default {
   data () {
     return {
