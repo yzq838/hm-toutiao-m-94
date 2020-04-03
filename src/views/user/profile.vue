@@ -13,8 +13,8 @@
         />
       </van-cell>
       <van-cell @click="showName = true" is-link title="名称" :value="user.name" />
-      <van-cell @click="showGender = true" is-link title="性别" value='男'/>
-      <van-cell is-link title="生日" value="2019-08-08" />
+      <van-cell @click="showGender = true" is-link title="性别" :value="user.gender === 0 ? '男' : '女'"/>
+      <van-cell @click="showDate" is-link title="生日" :value="user.birthday" />
     </van-cell-group>
     <!-- 弹层组件 (头像弹层)-->
     <van-popup v-model="showPhoto" style="width:80%">
@@ -41,12 +41,15 @@
            type="date"
           :min-date="minDate"
           :max-date="maxDate"
+          @cancel="showBirthDay = false "
+           @confirm="confirmDate"
          />
     </van-popup>
   </div>
 </template>
 
 <script>
+import dayjs from 'dayjs'
 export default {
   data () {
     return {
@@ -80,8 +83,23 @@ export default {
       // 关闭弹层
       this.showName = false
     },
-    selectItem () {
-
+    selectItem (item, index) {
+      this.user.gender = index// 直接把index赋值给性别
+      // 关闭弹层
+      this.showGender = false
+    }, // 显示生日弹层
+    showDate () {
+      this.showBirthDay = true // 控制时间弹层
+      // 将当前的生日设置到选择日期的当前时间，将生日字符串绑定到日期组件上
+      this.currentDate = new Date(this.user.birthday)
+    },
+    // 确定生日
+    confirmDate () {
+      // 当前选择的生日其实就是currentDate
+      // 拿到选择的日期  设置给生日  => date  => 字符串
+      this.user.birthday = dayjs(this.currentDate).format('YYYY-MM-DD')// 将date类型转化成字符串
+      // 关闭弹层
+      this.showBirthDay = false // 关闭弹层
     }
   }
 
