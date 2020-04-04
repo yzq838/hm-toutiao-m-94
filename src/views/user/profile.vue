@@ -4,12 +4,13 @@
     <van-cell-group>
       <van-cell is-link title="头像"  center>
         <van-image
+        @click="showPhoto=true"
           slot="default"
           width="1.5rem"
           height="1.5rem"
           fit="cover"
           round
-          src="https://img.yzcdn.cn/vant/cat.jpeg"
+          :src="user.photo"
         />
       </van-cell>
       <van-cell @click="showName = true" is-link title="名称" :value="user.name" />
@@ -17,11 +18,11 @@
       <van-cell @click="showDate" is-link title="生日" :value="user.birthday" />
     </van-cell-group>
     <!-- 弹层组件 (头像弹层)-->
-    <van-popup v-model="showPhoto" style="width:80%">
+    <van-popup v-model="showPhoto" style="width:80%" >
       <!-- 内容 -->
       <!-- 1 本地相册选择图片 -->
       <!-- 2 拍照 -->
-       <van-cell is-link title="本地相册选择图片"></van-cell>
+       <van-cell @click="openFileDialog" is-link title="本地相册选择图片"></van-cell>
        <van-cell is-link title="拍照"></van-cell>
     </van-popup>
      <!-- 弹昵称 -->
@@ -45,11 +46,14 @@
            @confirm="confirmDate"
          />
     </van-popup>
+    <input type="file" ref="myFile" @change="upload" style="display:none">
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
+import { getUserProfile, updatePhoto } from '@/api/user'
+
 export default {
   data () {
     return {
@@ -72,6 +76,14 @@ export default {
     }
   },
   methods: {
+
+    // 打开选择文件的对话框 触发点击input:file的动作
+    openFileDialog () {
+      this.$refs.myFile.click()// 触发input:file的click事件 触发事件就会弹出文件对话框
+    },
+    async getUserProfile () {
+      this.user = await getUserProfile()// 获取用户资料
+    },
     btnName () {
       if (this.user.name.length < 1 || this.user.name.length > 7) {
         // 此时格式不正确
@@ -100,6 +112,18 @@ export default {
       this.user.birthday = dayjs(this.currentDate).format('YYYY-MM-DD')// 将date类型转化成字符串
       // 关闭弹层
       this.showBirthDay = false // 关闭弹层
+    },
+    async upload (params) {
+      // 完成头像上传
+      const data = new FormData()
+      data.append('photo', this.$refs.myFile.files[0])
+      const result = await updatePhoto(data)
+      this.user.photo = result.photo
+      this.showPhoto = false
+    },
+
+    created () {
+      this.getUserProfile() // 获取用户资料
     }
   }
 
