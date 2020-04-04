@@ -56,7 +56,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['delUser']),
+    ...mapMutations(['delUser', 'updatePhoto']),
     // 引入mutations方法 ，调用删除用户操作
     async lgout () {
       try {
@@ -74,6 +74,7 @@ export default {
     // 获取用户的个人信息
     async getUserInfo () {
       this.userInfo = await getUserInfo()
+      this.updatePhoto({ photo: this.userInfo.photo })// 掉用mapMutations设置头像
     }
   }, // 钩子函数调用
   created () {
