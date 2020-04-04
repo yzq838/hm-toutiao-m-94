@@ -1,163 +1,268 @@
 <template>
-<!-- 文章列表组件 -->
-<div class="scrollwrapper">
-    <!-- div形成滚动条 -->
-    <!-- 下拉刷新包裹列表组件 -->
-<van-pull-refresh v-model="downLoadin" @refresh="onRefresh" :success-text= "successText">
-    <van-list finished-text="数据加载完毕" v-model="uploading" @load="onLoad" :finished = "finished">
-    <!-- 上拉加载 -->
-    <!-- 添加内容 -->
-    <van-cell-group>
-      <!-- /可以跳转到对应地址 -->
-<van-cell :to="`/article?artId=${item.art_id.toString()}`" v-for="item in articles" :key="item.art_id.toString()">
-    <!-- 文章列表的循环项 -->
-    <div class="article_item">
-  <h3 class="van-ellipsis">{{ item.title }}</h3>
-  <div class="img_box" v-if="item.cover.type === 3">
-     <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[0]"/>
-     <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[1]"/>
-     <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[2]"/>
+  <!-- 文章列表组件  放置列表 -->
+  <!-- van-list 可以帮助我们实现上拉加载  需要一些变量 -->
+  <!-- 这里放置这个div的目的是 形成滚动条, 因为我们后期要做 阅读记忆 -->
+  <!-- 阅读记忆  上次你阅读到哪  回来之后还是哪-->
+  <div class="scroll-wrapper" @scroll="remember" ref="myScroll">
+    <!-- 文章列表 -->
+    <!-- van-list组件 如果不加干涉, 初始化完毕 就会检测 自己距离底部的长度,如果超过了限定 ,就会执行 load事件  自动把
+       绑定的 loading 变成true
+    -->
+    <!-- 下拉刷新组件包裹 列表组件 -->
+    <van-pull-refresh v-model="downLoading" @refresh="onRefresh" :success-text="successText">
+      <van-list finished-text="没有了" v-model="upLoading" :finished="finished" @load="onLoad">
+        <!-- 循环内容 -->
+        <van-cell-group>
+          <!-- item.art_id 此时是一个大数字的对象 v-for 的key需要用字符串或者数字代理 -->
+          <!-- 给van-cell 加一个to属性 可以跳转到对应地址 -->
+          <van-cell :to="`/article?artId=${item.art_id.toString()}`" v-for="item in articles" :key="item.art_id.toString()">
+            <!-- 放置元素 文章列表的循环项  无图  单图  三图 -->
+            <div class="article_item">
+              <!-- 标题 -->
+              <h3 class="van-ellipsis">{{ item.title }}</h3>
+              <!-- 根据当前的封面类型决定显示单图 三图 还是无图 -->
+              <!-- 三图图片 -->
+              <div class="img_box" v-if="item.cover.type === 3">
+                <!-- 图片组件用的是 vant的组件库中的图片组件 需要使用该组件 进行图片的懒加载 -->
+                <!-- lazy-load表示 该图片组件 会进行 懒加载 也就是只有当前屏幕出现的之后 才去加载对应的图片 -->
+                <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[0]" />
+                <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[1]" />
+                <van-image lazy-load class="w33" fit="cover" :src="item.cover.images[2]" />
+              </div>
+              <!-- 单图 暂时隐藏掉单图-->
+               <div class="img_box" v-if="item.cover.type === 1">
+                 <!-- 单图取第一个 -->
+                <van-image lazy-load class="w100" fit="cover" :src="item.cover.images[0]" />
+              </div>
+              <!-- 作者信息 -->
+              <div class="info_box">
+                <span>{{ item.aut_name }}</span>
+                <span>{{ item.comm_count }}评论</span>
+                <!-- 使用过滤器 -->
+                <span>{{ item.pubdate | relTime }}</span>
+                <!-- 此叉号的显示 应该根据当前的登录状态来判断 如果登录了 可以显示 如果没有登录 不显示 -->
+                <!-- 最原始方式 -->
+                <!-- <span class="close" v-if="$store.state.user.token"> -->
+               <!-- 辅助函数的形式 -->
+               <!-- @事件名="逻辑处理"  点击事件中触发一个 显示反馈的事件 传出 点击的文章id-->
+               <span @click.stop="$emit('showAction', item.art_id.toString())" class="close" v-if="user.token">
+                  <van-icon name="cross"></van-icon>
+                </span>
+              </div>
+            </div>
+          </van-cell>
+        </van-cell-group>
+      </van-list>
+    </van-pull-refresh>
   </div>
-  <div class="img_box"  v-if="item.cover.type === 1">
-      <van-image lazy-load class="w100" fit="cover" :src="item.cover.images[0]"/>
-  </div>
-  <div class="info_box">
-     <span>{{ item.aut_name}}</span>
-     <span>{{ item.comm_count }}</span>
-     <span>{{ item.pubdate | relTime}}</span>
-
-     <!-- <span class="close" v-if="$store.state.user.token">最原始的方式 -->
-     <!-- 辅助函数的形式 叉号-->
-     <span  @click.stop="$emit('showAction',item.art_id.toString())" class="close" v-if="user.token">
-       <van-icon name="cross">
-         </van-icon></span>
-  </div>
-</div>
-
-</van-cell>
-    </van-cell-group>
-
-</van-list>
-</van-pull-refresh>
-</div>
-
 </template>
 
 <script>
-import { getArticles } from '@/api/articles'
+// 引入获取文章的模块
 import { mapState } from 'vuex'
-import eventbus from '@/utils/eventbus'
+import { getArticles } from '@/api/articles'
+import eventBus from '@/utils/eventbus'
 export default {
+  // 初始化函数
   created () {
-    eventbus.$on('delArticle', (artId, channelId) => {
+    // 监听删除文章事件
+    // 相当于 有多少个实例 就有多少个监听
+    // delAriticle  => 假如有四个实例  4个函数
+    eventBus.$on('delArticle', (artId, channelId) => {
+      // 这个位置 每个组件实例都会触发
+      // 这里要判断一下 传递过来的频道是否等于 自身的频道
       if (channelId === this.channel_id) {
+        // 说明当前的这个article-list实例 就是我们要去删除数据的实例
         const index = this.articles.findIndex(item => item.art_id.toString() === artId)
+        // 通过id 查询对应的文章数据所在的下标
         if (index > -1) {
-          this.articles.splice(index, 1)
+          // 因为下标从0开始 所以应该大于-1
+          this.articles.splice(index, 1) // 删除对应下标的数据
         }
+        // 但是 如果你一直删除 就会将 列表数据都删光 并不会触发 load事件
         if (this.articles.length === 0) {
-          this.onLoad()
+          //  说明你把数据给删光了
+          this.onLoad() // 手动的触发onload事件 给页面加数据
         }
       }
     })
-  }, // 初始化函数
-  computed: {
-    ...mapState(['user'])// 将user 对象映射到计算属性中
+    eventBus.$on('changeTab', (id) => {
+      // 传入的id  就是当前被激活的id
+      // 要判断 当前的文章列表  接收的id  是否等于此id 如果相等 表示 该文章列表实例 就是需要去滚动的 实例
+      // 一个tab页 下一个实例
+      if (id === this.channel_id) {
+        // 为什么这里 没有实现效果 因为 tab页切换事件 执行之后 article-list组件渲染 是异步的 没有办法 立刻得出渲染结果
+        // 如果相等 表示 我要滚动此滚动条
+        // 此时得不到 this.$refs.myScroll
+        // 怎么才能保证  执行 该代码时  已经完成了上一次的渲染呢
+        // this.$nextTick()  因为 vue是异步渲染, 如果想要等到上一次的结果 渲染完成  可以 在 this.$nextTick中处理
+        this.$nextTick(() => {
+          // 此时可以保证 之前的上一次的异步渲染已经完成
+          if (this.scrollTop && this.$refs.myScroll) {
+          // 当滚动距离不为0 并且 滚动元素 存在的情况下 才去滚动
+            this.$refs.myScroll.scrollTop = this.scrollTop // 滚动到固定的位置
+          }
+        })
+      }
+    })
   },
-
+  computed: {
+    ...mapState(['user']) // 将user对象映射到计算属性中
+  },
   data () {
     return {
-      successText: '', // 刷新成功文本
-      downLoadin: false,
-      uploading: false, // 表示是否开启了上拉加载 默认值false
-      finished: false, // 是否已经完成说有数据加载
+      successText: '', // 刷新成功的文本
+      downLoading: false, // 下载刷新状态 表示是否正在下拉刷新
+      upLoading: false, // 表示是否开启了上拉加载 默认值false
+      finished: false, // 表示 是否已经完成所有数据的加载
       articles: [], // 文章列表
-      timestamp: null// 时间戳存储历史时间按戳
+      timestamp: null, // 定义一个时间戳属性 用来存储 历史时间戳
+      scrollTop: 0 // 定义滚动的位置
     }
   },
+  //  props: ['channel_id'], // 字符串数组 接收方式 比较简单 易于上手
+
+  // props 对象形式 可以约束传入的值 必填 传值类型
   props: {
+    // key(props属性名): value(对象 配置)
     channel_id: {
-      required: true, // true含义必须传
-      type: Number, // 传入类型
-      default: null// 默认值，没有就使用
+      required: true, // 必填项 此属性的含义 true 要求该 props必须传
+      type: Number, // 表示要传入的prop属性的类型
+      default: null // 默认值的意思 假如你没有传入 prop属性 默认值 就会被采用
     }
   },
   methods: {
-
+    // 这是记录滚动事件
+    remember (event) {
+      // 函数防抖 在一段时间之内 只执行最后一次事件
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        //  记录 当前滚动的位置
+        this.scrollTop = event.target.scrollTop // 记录滚动的位置
+      }, 500)
+    },
+    // onLoad 是会自动执行
+    // 上拉加载
     async onLoad () {
-      //   setTimeout(() => { this.finished = true }, 1000)// 等待一秒关闭加载状态
-      //   if (this.articles.length > 30) {
-      //     this.finished = true// 关闭加载
-      //   } else {
-      //     const arr = Array.from(Array(10), (value, index) => index + 1)
-      //     this.articles.push(...arr)
-      //     this.uploading = false
-      //   }
-      await this.$sleep()
-      const data = await getArticles({ channel_id: this.channel_id, timestamp: this.timestamp || Date.now() })
-      this.articles.push(...data.results)
-      this.uploading = false
+      console.log('开始加载文章列表数据')
+      // 如果你的数据已经加载完毕 你应该把finished 设置为true 表示一切结束了 不再请求
+      // 此时强制的判断总条数 如果超过100条 就直接关闭
+      // vant-list组件 第一次加载 需要让 list组件出现滚动条 如果没有滚动条 就没有办法 继续往下拉
+      // if (this.articles.length > 50) {
+      //   // 如果此时记录已经大于100
+      //   this.finished = true // 关闭加载
+      // } else {
+      //   // 1-60
+      //   const arr = Array.from(
+      //     Array(15),
+      //     (value, index) => this.articles.length + index + 1
+      //   )
+      //   // 上拉加载 不是覆盖之前的数据  应该把数据追加到数组的队尾
+      //   this.articles.push(...arr)
+      //   // 添加完数据 需要手动的关掉 loading
+      //   this.upLoading = false
+      // }
+
+      // 下面这么写 依然不能关掉加载状态 为什么 ? 因为关掉之后  检测机制  高度还是不够 还是会开启
+      // 如果你有数据 你应该 把数据到加到list中
+      // 如果想关掉
+      // setTimeout(() => {
+      //   this.finished = true // 表示 数据已经全部加载完毕 没有数据了
+      // }, 1000) // 等待一秒 然后关闭加载状态
+      await this.$sleep() // 人为控制了 请求的时间
+      // this.timestamp || Date.now()  如果有历史时间戳 用历史时间戳 否则用当前的时间戳
+      const data = await getArticles({ channel_id: this.channel_id, timestamp: this.timestamp || Date.now() }) // this.channel_id指的是 当前的频道id
+      //  获取内容
+      this.articles.push(...data.results) // 将数据追加到队尾  这里用...
+      this.upLoading = false // 关闭加载状态
+      // 将历史时间戳 给timestamp  但是 赋值之前有个判断 需要判断一个历史时间是否为0
+      // 如果历史时间戳为 0 说明 此时已经没有数据了 应该宣布 结束   finished true
       if (data.pre_timestamp) {
+        // 如果有历史时间戳 表示 还有数据可以继续进行加载
         this.timestamp = data.pre_timestamp
       } else {
+        // 表示没有数据可以请求了
         this.finished = true
       }
-    }, // 下拉刷新
+    },
+    // 下拉刷新
     async onRefresh () {
-      await this.$sleep()
+      await this.$sleep() // 人为控制了 请求的时间
+      // 下拉刷新应该发送最新的时间戳
       const data = await getArticles({
         channel_id: this.channel_id,
-        timestamp: Date.now()
+        timestamp: Date.now() // 永远传最新的时间戳
       })
-      this.downLoadin = false
+      // 手动的关闭 下拉刷新的状态
+      this.downLoading = false
+      // 需要判断 最新的时间戳能否换来的数据啊  如果能换来数据 把新数据整个替换旧数据 如果不能  就告诉大家 暂时没有更新
       if (data.results.length) {
-        this.articles = data.results
+        // 如果有返回数据
+        // 需要将整个的articles替换
+        this.articles = data.results // 历史数据全部被覆盖
+        // 此时你 已经之前的全部数据覆盖了 假如 你之前把数据拉到了低端 也就意味着 你之前的finished已经为true了
         if (data.pre_timestamp) {
-          this.finished = false
-          this.timestamp = data.pre_timestamp
+          // 因为下拉刷新 换来了一拨新的数据 里面 又有历史时间戳
+          this.finished = false // 重新唤醒列表 让列表可以继续上拉加载
+          this.timestamp = data.pre_timestamp // 记录历史时间戳给变量
         }
-        this.successText = `当前更新了${data.results.length}条数据`
+        this.successText = `更新了${data.results.length}条数据`
       } else {
-        this.successText = '当前已经是最新数据了'
+        // 如果换不来新数据
+        this.successText = '当前已经是最新了'
       }
-    //   setTimeout(() => {
-    //     const arr = Array.from(Array(3), (value, index) => '追加' + (index + 1))
-    //     this.articles.unshift(...arr)
-    //     this.downLoadin = false
-    //     this.successText = `更新了${arr.length}条数据`
-    //   }, 1000)
-    }
 
+      // setTimeout(() => {
+      //   // 下拉刷新 表示要读取最新的数据 而且最新的数据要添加到数据头部
+      //   const arr = Array.from(
+      //     Array(2),
+      //     (value, index) => '追加' + (index + 1)
+      //   )
+      //   // 数组添加到头部
+      //   this.articles.unshift(...arr)
+      //   // 手动关闭正在加载的状态
+      //   this.downLoading = false
+      //   this.successText = `更新了${arr.length}条数据`
+      // }, 1000)
+    }
+  },
+  activated () {
+    // 可以在激活函数中 去判断当前是否 scrollTop发生了变化
+    if (this.$refs.myScroll && this.scrollTop) {
+      //  判断滚动位置是否大于0
+      // 将div滚动回原来的位置
+      this.$refs.myScroll.scrollTop = this.scrollTop // 将记录的位置 滚动到 对应位置
+    }
   }
 }
 </script>
 
-<style lang= 'less' scoped>
-.article_item{
-  h3{
+<style lang='less' scoped>
+.article_item {
+  h3 {
     font-weight: normal;
     line-height: 2;
   }
-  .img_box{
+  .img_box {
     display: flex;
     justify-content: space-between;
-    .w33{
+    .w33 {
       width: 33%;
       height: 90px;
     }
-    .w100{
+    .w100 {
       width: 100%;
       height: 180px;
     }
   }
-  .info_box{
+  .info_box {
     color: #999;
     line-height: 2;
     position: relative;
     font-size: 12px;
-    span{
+    span {
       padding-right: 10px;
-      &.close{
+      &.close {
         border: 1px solid #ddd;
         border-radius: 2px;
         line-height: 15px;

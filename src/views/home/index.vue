@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <van-tabs v-model=" activeIndex">
+    <van-tabs v-model=" activeIndex" @change="changeTab">
       <!-- 放置子标签 -->
       <van-tab :title="item.name" v-for="item in channels" :key="item.id">
         <!-- 生成多个单元格 -->
@@ -52,6 +52,12 @@ export default {
     }
   },
   methods: {
+    // 切换页签
+    changeTab () {
+      // 切换页签时 我要广播一个消息  让对应的页签中的文章列表  去滚动 滚动条
+      // 广播中传出一个参数 传当前谁被激活了 传出当前激活索引的 id
+      eventbus.$emit('changeTab', this.channels[this.activeIndex].id)
+    },
 
     // 删除频道的方法
     async delChannel (id) {

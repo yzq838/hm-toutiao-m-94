@@ -5,7 +5,11 @@
     <van-nav-bar @click-right="$router.push('/search')" fixed title="黑马头条" right-text="搜索" v-if="$route.path !== '/user'" ></van-nav-bar>
 <!-- 一级路由容器 地址是user 更改样式（）-->
 <div class="my-wrapper" :class="{noTop: $route.path === '/user'}">
-  <router-view></router-view>
+ <!-- 直接缓存二级路由容器 使用keep-alive包裹容器 -->
+ <keep-alive>
+<router-view></router-view>
+ </keep-alive>
+
 </div>
 <van-tabbar route>
   <!-- 点击导航标签跳转路由 -->
